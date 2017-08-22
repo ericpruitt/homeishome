@@ -32,8 +32,9 @@ typedef int (*getpwuid_r_type)(uid_t, struct passwd *, char *, size_t,
 
 /**
  * If a password database entry represents the current user and the "HOME"
- * environment variable is a non-empty string, ensure that the variable's value
- * is used as the home directory (`entry->pw_dir = getenv("HOME")`).
+ * environment variable is a non-empty string, ensure that the "HOME"
+ * variable's value is used as the home directory (`entry->pw_dir =
+ * getenv("HOME")`).
  *
  * Arguments:
  * - entry: Password database entry.
@@ -52,9 +53,10 @@ struct passwd *alter_passwd(struct passwd *entry)
 }
 
 // All functions below this line are thin wrappers around various library calls
-// that return information about the password database that invoke
-// "alter_passwd". The arguments accepted by these functions and the return
-// values are identical to their canonical implementations.
+// that return information from the password database. The wrappers invoke
+// "alter_passwd" on any password database entries returned to the caller. The
+// arguments accepted by these functions and the return values are identical to
+// their canonical implementations.
 
 struct passwd *getpwent(void)
 {

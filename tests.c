@@ -3,6 +3,11 @@
  * messages for failing tests are written to standard error, and messages for
  * other tests are written to standard output.
  *
+ * Exit Statuses:
+ * - 0: All tests passed.
+ * - 1: An error occurred during initialization.
+ * - 2: One or more tests failed.
+ *
  * Metadata:
  * - Author:  Eric Pruitt; <https://www.codevat.com>
  * - License: [BSD 2-Clause](http://opensource.org/licenses/BSD-2-Clause)
@@ -77,7 +82,7 @@ struct passwd* check_entry(const char *prefix, struct passwd *entry)
     bool passed = false;
 
     // Some tests used for negative assertions use the superuser account as the
-    // alternate test subject, since these will always fail when running as
+    // alternate test subject. Since these will always fail when running as
     // root, they are ignored.
     bool ignoreable = entry && !entry->pw_uid && !geteuid();
 
@@ -187,7 +192,7 @@ clean_up:
         return status;
     }
 
-    printf("Failures: %s%ld" RESET_ATTRIBUTES "\n", 
+    printf("Failures: %s%ld" RESET_ATTRIBUTES "\n",
         failures ? SETAF_RED : SETAF_GREEN,
         failures
     );
