@@ -139,7 +139,7 @@ int main(void)
         goto clean_up;
     }
 
-    if (!(entry = getpwuid(0))) {
+    if (!(errno = 0, entry = getpwuid(0))) {
         if (!errno) {
             errno = EINVAL;
         }
@@ -159,28 +159,34 @@ int main(void)
     }
 
     setpwent();
-    for (; (entry = getpwent()); check_entry("getpwent", entry));
+    for (; errno = 0, (entry = getpwent()); check_entry("getpwent", entry));
     endpwent();
 
     setpwent();
-    for (; getpwent_r(&pwd, buf, buflen, &entry), entry; ) {
+    for (; errno = 0, getpwent_r(&pwd, buf, buflen, &entry), entry; ) {
         check_entry("getpwent_r", entry);
     }
     endpwent();
 
+    errno = 0;
     check_entry("getpwnam", getpwnam(logname));
 
+    errno = 0;
     getpwnam_r(logname, &pwd, buf, buflen, &entry);
     check_entry("getpwnam_r", entry);
 
+    errno = 0;
     getpwnam_r(superuser_name, &pwd, buf, buflen, &entry);
     check_entry("getpwnam_r", entry);
 
+    errno = 0;
     check_entry("getpwuid", getpwuid(geteuid()));
 
+    errno = 0;
     getpwuid_r(geteuid(), &pwd, buf, buflen, &entry);
     check_entry("getpwuid_r", entry);
 
+    errno = 0;
     getpwuid_r(0, &pwd, buf, buflen, &entry);
     check_entry("getpwuid_r", entry);
 
