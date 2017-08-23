@@ -1,5 +1,5 @@
 /**
- * Test suite for homeishonme.so. The compiled binary accepts no arguments. Log
+ * Test suite for homeishome.so. The compiled binary accepts no arguments. Log
  * messages for failing tests are written to standard error, and messages for
  * other tests are written to standard output.
  *
@@ -91,7 +91,7 @@ struct passwd* check_entry(const char *prefix, struct passwd *entry)
         passed = (canary_expected == canary_found);
 
         fprintf(LOG_STREAM,
-            "%s: %s: pw_uid = %u (%s), pw->dir = %s\n", prefix, STATUS,
+            "%s: %s: pw_uid = %u (%s), pw_dir = %s\n", prefix, STATUS,
             entry->pw_uid,
             entry->pw_name,
             entry->pw_dir
@@ -149,7 +149,7 @@ int main(void)
     }
 
     // The glibc implementation of strdup triggers "disabled expansion of
-    // recursive macro [-Werror,-Wdisabled-macro-expansion]" in clang.
+    // recursive macro [-Werror,-Wdisabled-macro-expansion]" in Clang.
     if ((superuser_name = malloc(strlen(entry->pw_name) + 1))) {
         strcpy(superuser_name, entry->pw_name);
     } else {

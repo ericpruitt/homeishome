@@ -10,8 +10,8 @@ always used as the current user's home directory even if the password database
 contains something else. This is achieved by replacing GNU libc's default
 implementations of _getpwent(3)_, _getpwent_r(3)_, _getpwnam(3)_,
 _getpwnam_r(3)_, _getpwuid(3)_ and _getpwuid_r(3)_ with thin wrappers that
-changes `passwd->pw_dir` to `getenv("HOME")` when `passwd->pw_uid` is the same
-as the effect UID. For example:
+change `passwd->pw_dir` to `getenv("HOME")` when `passwd->pw_uid` is the same
+as the effective UID. For example:
 
     # Normal behavior:
     $ HOME="EXAMPLE" getent passwd ericpruitt
