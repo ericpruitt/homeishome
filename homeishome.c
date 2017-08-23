@@ -68,11 +68,11 @@ int getpwent_r(struct passwd *pwbuf, char *buf, size_t buflen,
  struct passwd **pwbufp) {
 
     int result;
-    getpwent_r_type original_getpwent_r;
+    getpwent_r_type original;
 
-    original_getpwent_r = (getpwent_r_type) dlsym(RTLD_NEXT, "getpwent_r");
+    original = (getpwent_r_type) dlsym(RTLD_NEXT, "getpwent_r");
 
-    result = original_getpwent_r(pwbuf, buf, buflen, pwbufp);
+    result = original(pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
 }
@@ -87,11 +87,11 @@ int getpwnam_r(const char *name, struct passwd *pwbuf, char *buf,
   size_t buflen, struct passwd **pwbufp) {
 
     int result;
-    getpwnam_r_type original_getpwnam_r;
+    getpwnam_r_type original;
 
-    original_getpwnam_r = (getpwnam_r_type) dlsym(RTLD_NEXT, "getpwnam_r");
+    original = (getpwnam_r_type) dlsym(RTLD_NEXT, "getpwnam_r");
 
-    result = original_getpwnam_r(name, pwbuf, buf, buflen, pwbufp);
+    result = original(name, pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
 }
@@ -106,11 +106,11 @@ int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
   struct passwd **pwbufp) {
 
     int result;
-    getpwuid_r_type original_getpwuid_r;
+    getpwuid_r_type original;
 
-    original_getpwuid_r = (getpwuid_r_type) dlsym(RTLD_NEXT, "getpwuid_r");
+    original = (getpwuid_r_type) dlsym(RTLD_NEXT, "getpwuid_r");
 
-    result = original_getpwuid_r(uid, pwbuf, buf, buflen, pwbufp);
+    result = original(uid, pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
 }
