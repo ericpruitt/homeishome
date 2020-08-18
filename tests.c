@@ -198,7 +198,7 @@ clean_up:
         return status;
     }
 
-    printf("Failures: %s%ld" RESET_ATTRIBUTES "\n",
+    printf("Failures: %s%zu" RESET_ATTRIBUTES "\n",
         failures ? SETAF_RED : SETAF_GREEN,
         failures
     );
