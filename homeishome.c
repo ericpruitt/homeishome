@@ -169,8 +169,6 @@ int cmdline(int *argc, char ***argv)
         return -1;
     }
 
-    *argc = 0;
-
     for (*argc = 0; (nread = getdelim(&line, &len, '\0', stream)) != -1; ) {
         next = realloc(*argv, (size_t) ++(*argc) * sizeof(char *));
 
