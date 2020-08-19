@@ -15,7 +15,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-struct passwd *alter_passwd(struct passwd *);
+#include "config.h"
+
+const char service_interp[] __attribute__((section(".interp"))) = (
+    LD_PATH
+);
+
+int cmdline(int *, char ***);
+void lib_main(void);
+int _main(int, char **);
 
 /**
  * Function pointer types of the canonical implementations of the overridden
@@ -53,12 +61,12 @@ struct passwd *alter_passwd(struct passwd *entry)
     return entry;
 }
 
-// With the exception of "main" and "xstrdup", all functions below this line
-// are thin wrappers around various library calls that return information from
-// the password database. The wrappers invoke "alter_passwd" on any password
-// database entries returned to the caller. The arguments accepted by these
-// functions and the return values are identical to their canonical
-// implementations.
+// With the exception of "xstrdup", "_main" and "lib_main", functions below
+// this line are thin wrappers around various library calls that return
+// information from the password database. The wrappers invoke "alter_passwd"
+// on any password database entries returned to the caller. The arguments
+// accepted by these functions and the return values are identical to their
+// canonical implementations.
 
 struct passwd *getpwent(void)
 {
@@ -135,7 +143,66 @@ static char *xstrdup(char *string)
     return buffer;
 }
 
-int main(int argc, char **argv)
+/**
+ * Read the command line for "/proc/self/cmdline" and generated values suitable
+ * for use as "argc" and "argv" in a standard main function.
+ *
+ * Arguments:
+ * - argc: Pointer to the destination where the number of arguments should be
+ *   stored.
+ * - argv: Pointer to the destination where the arguments should be stored. As
+ *   with "argv" used for "main", this array is terminated with a NULL pointer.
+ *
+ * Returns: 0 if the arguments were successfully extracted or -1 otherwise with
+ * errno set accordingly.
+ */
+int cmdline(int *argc, char ***argv)
+{
+    ssize_t nread;
+    FILE *stream;
+
+    size_t len = 0;
+    char *line = NULL;
+    void *next = NULL;
+
+    if (!(stream = fopen("/proc/self/cmdline", "r"))) {
+        return -1;
+    }
+
+    *argc = 0;
+
+     for (*argc = 0; (nread = getdelim(&line, &len, '\0', stream)) != -1; ) {
+        next = realloc(*argv, (size_t) ++(*argc) * sizeof(char *));
+
+        if (!next) {
+            for (; *argc > 0; (*argc)--) {
+                free((*argv)[*argc - 1]);
+            }
+
+            free(*argv);
+            return -1;
+        }
+
+        *argv = next;
+        (*argv)[*argc - 1] = line;
+        line = NULL;
+        len = 0;
+    }
+
+    (*argv)[*argc] = NULL;
+    return 0;
+}
+
+/**
+ * This function is simply a renamed "main" function and works the same way.
+ *
+ * Arguments:
+ * - argc: Number of command line arguments.
+ * - argv: List of command line arguments terminated with a NULL pointer.
+ *
+ * Returns: The program exit status.
+ */
+int _main(int argc, char **argv)
 {
     char exe[PATH_MAX];
     char *path;
@@ -144,8 +211,9 @@ int main(int argc, char **argv)
     char *ld_preload = NULL;
     char *paths = NULL;
 
+
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s COMMAND [ARGUMENT]...\n", argv[0]);
+        dprintf(STDERR_FILENO, "Usage: %s COMMAND [ARGUMENT]...\n", argv[0]);
     } else if (!realpath("/proc/self/exe", exe)) {
         perror("realpath: /proc/self/exe");
     } else {
@@ -197,4 +265,22 @@ error:
     free(paths);
     free(ld_preload);
     _exit(255);
+}
+
+/**
+ * This function is the entry point when the shared object is executed.
+ */
+void lib_main(void)
+{
+    int argc = 0;
+    char **argv = NULL;
+    int exit_status = 1;
+
+    if (cmdline(&argc, &argv)) {
+        perror("cmdline");
+    } else {
+        exit_status = _main(argc, argv);
+    }
+
+    exit(exit_status);
 }

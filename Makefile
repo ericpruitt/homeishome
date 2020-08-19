@@ -3,39 +3,37 @@
 
 INSTALLDIR = /usr/local/bin
 
-# TODO: Figure out how to use the address and undefined behavior sanitizer with
-# Clang.
-CFLAGS = -Wall -fPIC -O3
+CFLAGS = -Wall -fPIC -O3 -shared
 CPPFLAGS = -D_GNU_SOURCE
-LDFLAGS = -ldl
+LDFLAGS = -ldl -Wl,-e,lib_main
 LIBRARY_SO = homeishome.so
 
-SANITY_CFLAGS = $(CFLAGS) -g -fsanitize=address,undefined
+SANITY_CFLAGS = $(CFLAGS)
 TEST_CFLAGS = -Werror -Wall -Wpedantic
-LIBASAN_SO = /usr/lib/gcc/x86_64-linux-gnu/6/libasan.so
 
 all: $(LIBRARY_SO)
 
-$(LIBRARY_SO): $(LIBRARY_SO:.so=.c)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $? -o $@ $(LDFLAGS)
+noop: noop.c
+	$(CC) $? -o $@
 
-sanity:
-	$(MAKE) -s clean
-	$(MAKE) tests
-	$(MAKE) \
-		CC="gcc" \
-		CFLAGS="$(CFLAGS) $(SANITY_CFLAGS)" \
-		TEST_CFLAGS="$(TEST_CFLAGS) $(SANITY_CFLAGS)" \
-		LDFLAGS="$(LDFLAGS) -lasan -lubsan" \
-	;
-	$(MAKE) run-tests
-	$(MAKE) clean
+config.h: noop
+	rm -f $@.tmp
+	ldd noop | awk >> $@.tmp ' \
+		/ld-linux/ { \
+			print "#define LD_PATH \"" $$(NF - 1) "\""; \
+			exit; \
+		} \
+	'
+	mv $@.tmp $@
+
+homeishome.so: homeishome.c config.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) homeishome.c -o homeishome.so $(LDFLAGS)
 
 tests: tests.c
 	$(CC) $(CPPFLAGS) $(TEST_CFLAGS) $? -o $@
 
-run-tests: $(LIBRARY_SO) tests
-	LD_PRELOAD="$(LIBASAN_SO)" ./$(LIBRARY_SO) ./tests
+test: $(LIBRARY_SO) tests
+	./$(LIBRARY_SO) ./tests
 
 $(INSTALLDIR)/$(LIBRARY_SO): $(LIBRARY_SO) tests
 	cp $(LIBRARY_SO) $(INSTALLDIR)
@@ -50,4 +48,4 @@ uninstall:
 	rm $(INSTALLDIR)/$(LIBRARY_SO)
 
 clean:
-	rm -f $(LIBRARY_SO) tests
+	rm -f $(LIBRARY_SO) config.h noop tests
