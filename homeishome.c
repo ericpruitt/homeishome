@@ -57,12 +57,12 @@ static struct passwd *alter_passwd(struct passwd *entry)
     return entry;
 }
 
-// With the exception of "xstrdup", "_main" and "lib_main", functions below
-// this line are thin wrappers around various library calls that return
-// information from the password database. The wrappers invoke "alter_passwd"
-// on any password database entries returned to the caller. The arguments
-// accepted by these functions and the return values are identical to their
-// canonical implementations.
+// With the exception of "_main" and "lib_main", functions below this line are
+// thin wrappers around various library calls that return information from the
+// password database. The wrappers invoke "alter_passwd" on any password
+// database entries returned to the caller. The arguments accepted by these
+// functions and the return values are identical to their canonical
+// implementations.
 
 struct passwd *getpwent(void)
 {
@@ -124,22 +124,6 @@ int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
 }
 
 //                                    ---
-
-/**
- * This is a reimplementation of _strdup(3)_ that was created because the glibc
- * implementation of strdup triggers "disabled expansion of recursive macro
- * [-Werror,-Wdisabled-macro-expansion]" in Clang.
- */
-static char *xstrdup(char *string)
-{
-    char *buffer = malloc(strlen(string) + 1);
-
-    if (buffer) {
-        strcpy(buffer, string);
-    }
-
-    return buffer;
-}
 
 /**
  * Read the command line for "/proc/self/cmdline" and generated values suitable
@@ -217,14 +201,14 @@ static int _main(int argc, char **argv)
 
         if (!paths || paths[0] == '\0') {
             paths = NULL;
-            ld_preload = xstrdup(exe);
+            ld_preload = strdup(exe);
 
             if (!ld_preload) {
-                perror("xstrdup");
+                perror("strdup");
                 goto error;
             }
-        } else if (!(paths = xstrdup(paths))) {
-            perror("xstrdup");
+        } else if (!(paths = strdup(paths))) {
+            perror("strdup");
             goto error;
         } else {
             // Since strtok(3) may modify the underlying string, the new
