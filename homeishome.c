@@ -152,7 +152,8 @@ static int cmdline(int *argc, char ***argv)
 
     // TODO: Deallocate memory when getdelim(3) fails.
     for (*argc = 0; getdelim(&line, &len, '\0', stream) != -1; ) {
-        if (!(next = realloc(*argv, (size_t) ++(*argc) * sizeof(char *)))) {
+        (*argc)++;
+        if (!(next = realloc(*argv, (size_t) (*argc + 1) * sizeof(char *)))) {
             for (; *argc > 0; (*argc)--) {
                 free((*argv)[*argc - 1]);
             }
