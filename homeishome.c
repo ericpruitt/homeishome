@@ -17,11 +17,9 @@
 
 #include "config.h"
 
-const char service_interp[] __attribute__((section(".interp"))) = (
-    LD_PATH
-);
-
 void homeishome_so_main(void);
+
+const char service_interp[] __attribute__((section(".interp"))) = LD_PATH;
 
 /**
  * Function pointer types of the canonical implementations of the overridden
@@ -73,7 +71,8 @@ struct passwd *getpwent(void)
 }
 
 int getpwent_r(struct passwd *pwbuf, char *buf, size_t buflen,
- struct passwd **pwbufp) {
+  struct passwd **pwbufp)
+{
 
     int result;
     getpwent_r_type original;
@@ -92,8 +91,8 @@ struct passwd *getpwnam(const char *name)
 }
 
 int getpwnam_r(const char *name, struct passwd *pwbuf, char *buf,
-  size_t buflen, struct passwd **pwbufp) {
-
+  size_t buflen, struct passwd **pwbufp)
+{
     int result;
     getpwnam_r_type original;
 
@@ -111,7 +110,8 @@ struct passwd *getpwuid(uid_t uid)
 }
 
 int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
-  struct passwd **pwbufp) {
+  struct passwd **pwbufp)
+{
 
     int result;
     getpwuid_r_type original;
