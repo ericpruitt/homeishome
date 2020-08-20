@@ -19,7 +19,7 @@ config.h: noop
 	@rm -f $@.tmp
 	@ld_path="$$( \
 		export LC_ALL=C && \
-		readelf -a $? \
+		readelf -l $? \
 		| sed -n 's/.*\[Requesting program interpreter: \(.*\)\]/\1/p'\
 	)" && \
 	if [ -z "$$ld_path" ]; then \
