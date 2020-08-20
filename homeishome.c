@@ -140,7 +140,6 @@ int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
  */
 static int cmdline(int *argc, char ***argv)
 {
-    ssize_t nread;
     FILE *stream;
 
     size_t len = 0;
@@ -151,7 +150,7 @@ static int cmdline(int *argc, char ***argv)
         return -1;
     }
 
-    for (*argc = 0; (nread = getdelim(&line, &len, '\0', stream)) != -1; ) {
+    for (*argc = 0; getdelim(&line, &len, '\0', stream) != -1; ) {
         next = realloc(*argv, (size_t) ++(*argc) * sizeof(char *));
 
         if (!next) {
