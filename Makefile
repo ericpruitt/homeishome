@@ -5,7 +5,7 @@ INSTALLDIR = /usr/local/bin
 
 CFLAGS = -Wall -fPIC -O3 -shared
 CPPFLAGS = -D_GNU_SOURCE
-LDFLAGS = -ldl -Wl,-e,lib_main
+LDFLAGS = -ldl -Wl,-e,homeishome_so_main
 LIBRARY_SO = homeishome.so
 
 SANITY_CFLAGS = $(CFLAGS)

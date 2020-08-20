@@ -21,7 +21,7 @@ const char service_interp[] __attribute__((section(".interp"))) = (
     LD_PATH
 );
 
-void lib_main(void);
+void homeishome_so_main(void);
 
 /**
  * Function pointer types of the canonical implementations of the overridden
@@ -266,7 +266,7 @@ error:
 /**
  * This function is the entry point when the shared object is executed.
  */
-void lib_main(void)
+void homeishome_so_main(void)
 {
     int argc = 0;
     char **argv = NULL;
