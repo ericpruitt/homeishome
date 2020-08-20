@@ -25,8 +25,8 @@ config.h: noop
 	'
 	mv $@.tmp $@
 
-homeishome.so: homeishome.c config.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) homeishome.c -o homeishome.so $(LDFLAGS)
+$(LIBRARY_SO): homeishome.c homeishome.h config.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) homeishome.c -o $@ $(LDFLAGS)
 
 tests: tests.c
 	$(CC) $(CPPFLAGS) $(TEST_CFLAGS) $? -o $@
