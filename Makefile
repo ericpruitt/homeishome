@@ -8,7 +8,6 @@ CPPFLAGS = -D_GNU_SOURCE
 LDFLAGS = -ldl -Wl,-e,homeishome_so_main
 LIBRARY_SO = homeishome.so
 
-SANITY_CFLAGS = $(CFLAGS)
 TEST_CFLAGS = -Werror -Wall -Wpedantic
 
 all: $(LIBRARY_SO)
