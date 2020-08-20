@@ -21,9 +21,7 @@ const char service_interp[] __attribute__((section(".interp"))) = (
     LD_PATH
 );
 
-int cmdline(int *, char ***);
 void lib_main(void);
-int _main(int, char **);
 
 /**
  * Function pointer types of the canonical implementations of the overridden
@@ -50,7 +48,7 @@ typedef int (*getpwuid_r_type)(uid_t, struct passwd *, char *, size_t,
  *
  * Returns: Potentially modified password database entry.
  */
-struct passwd *alter_passwd(struct passwd *entry)
+static struct passwd *alter_passwd(struct passwd *entry)
 {
     char *home = getenv("HOME");
 
@@ -156,7 +154,7 @@ static char *xstrdup(char *string)
  * Returns: 0 if the arguments were successfully extracted or -1 otherwise with
  * errno set accordingly.
  */
-int cmdline(int *argc, char ***argv)
+static int cmdline(int *argc, char ***argv)
 {
     ssize_t nread;
     FILE *stream;
@@ -200,7 +198,7 @@ int cmdline(int *argc, char ***argv)
  *
  * Returns: The program exit status.
  */
-int _main(int argc, char **argv)
+static int _main(int argc, char **argv)
 {
     char exe[PATH_MAX];
     char *path;
