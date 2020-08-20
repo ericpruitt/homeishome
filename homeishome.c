@@ -7,6 +7,7 @@
  * - License: [BSD 2-Clause](http://opensource.org/licenses/BSD-2-Clause)
  */
 #include <dlfcn.h>
+#include <errno.h>
 #include <limits.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -150,26 +151,32 @@ static int cmdline(int *argc, char ***argv)
         return -1;
     }
 
-    // TODO: Deallocate memory when getdelim(3) fails.
-    for (*argc = 0; getdelim(&line, &len, '\0', stream) != -1; ) {
-        (*argc)++;
-        if (!(next = realloc(*argv, (size_t) (*argc + 1) * sizeof(char *)))) {
-            for (; *argc > 0; (*argc)--) {
-                free((*argv)[*argc - 1]);
-            }
+    *argc = 0;
 
-            free(*argv);
-            return -1;
+    for (errno = 0; getdelim(&line, &len, '\0', stream) != -1; errno = 0) {
+        if (!(next = realloc(*argv, (size_t) (*argc + 2) * sizeof(char *)))) {
+            goto error;
         }
 
         *argv = next;
-        (*argv)[*argc - 1] = line;
+        (*argv)[(*argc)++] = line;
         line = NULL;
         len = 0;
     }
 
-    (*argv)[*argc] = NULL;
-    return 0;
+    if (!errno) {
+        (*argv)[*argc] = NULL;
+        return 0;
+    }
+
+error:
+    for (; *argc > 0; (*argc)--) {
+        free((*argv)[*argc - 1]);
+    }
+
+    free(line);
+    free(*argv);
+    return -1;
 }
 
 /**
