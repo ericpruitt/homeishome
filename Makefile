@@ -16,15 +16,19 @@ noop: noop.c
 	$(CC) $? -o $@
 
 config.h: noop
-	rm -f $@.tmp
-	ld_path="$$( \
+	@rm -f $@.tmp
+	@ld_path="$$( \
 		export LC_ALL=C && \
 		readelf -a $? \
 		| sed -n 's/.*\[Requesting program interpreter: \(.*\)\]/\1/p'\
 	)" && \
-	test -n "$$ld_path" && \
-	printf '#define LD_PATH "%s"\n' "$$ld_path" >> $@.tmp
-	mv $@.tmp $@
+	if [ -z "$$ld_path" ]; then \
+		echo "$@: unable to determine ELF interpreter path" >&2; \
+		exit 1; \
+	else \
+		printf '#define LD_PATH "%s"\n' "$$ld_path" >> $@.tmp; \
+	fi
+	@mv $@.tmp $@
 
 $(LIBRARY_SO): homeishome.c config.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) homeishome.c -o $@ $(LDFLAGS)
