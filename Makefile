@@ -17,21 +17,13 @@ noop: noop.c
 
 config.h: noop
 	rm -f $@.tmp
-	@ldd $? | awk >> $@.tmp ' \
-		/\/ld/ { \
-			if (hits++) { \
-				print "$@: multiple ld matches" > "/dev/fd/2";\
-				exit; \
-			} \
-			print "#define LD_PATH \"" $$(NF - 1) "\""; \
-		} \
-		END { \
-			if (hits == 0) {; \
-				print "no ld matches" > "/dev/fd/2"; \
-			} \
-			exit (hits == 1 ? 0 : 1); \
-		} \
-	'
+	ld_path="$$( \
+		export LC_ALL=C && \
+		readelf -a $? \
+		| sed -n 's/.*\[Requesting program interpreter: \(.*\)\]/\1/p'\
+	)" && \
+	test -n "$$ld_path" && \
+	printf '#define LD_PATH "%s"\n' "$$ld_path" >> $@.tmp
 	mv $@.tmp $@
 
 $(LIBRARY_SO): homeishome.c config.h
