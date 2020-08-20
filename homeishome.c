@@ -57,12 +57,12 @@ static struct passwd *alter_passwd(struct passwd *entry)
     return entry;
 }
 
-// With the exception of "_main" and "lib_main", functions below this line are
-// thin wrappers around various library calls that return information from the
-// password database. The wrappers invoke "alter_passwd" on any password
-// database entries returned to the caller. The arguments accepted by these
-// functions and the return values are identical to their canonical
-// implementations.
+// With the exception of "cmdline", "_main" and "homeishome_so_main", functions
+// below this line are thin wrappers around various library calls that return
+// information from the password database. The wrappers invoke "alter_passwd"
+// on any password database entries returned to the caller. The arguments
+// accepted by these functions and the return values are identical to their
+// canonical implementations.
 
 struct passwd *getpwent(void)
 {
