@@ -17,10 +17,19 @@ noop: noop.c
 
 config.h: noop
 	rm -f $@.tmp
-	ldd noop | awk >> $@.tmp ' \
-		/ld-linux/ { \
+	@ldd $? | awk >> $@.tmp ' \
+		/\/ld/ { \
+			if (hits++) { \
+				print "$@: multiple ld matches" > "/dev/fd/2";\
+				exit; \
+			} \
 			print "#define LD_PATH \"" $$(NF - 1) "\""; \
-			exit; \
+		} \
+		END { \
+			if (hits == 0) {; \
+				print "no ld matches" > "/dev/fd/2"; \
+			} \
+			exit (hits == 1 ? 0 : 1); \
 		} \
 	'
 	mv $@.tmp $@
