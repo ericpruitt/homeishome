@@ -74,7 +74,6 @@ struct passwd *getpwent(void)
 int getpwent_r(struct passwd *pwbuf, char *buf, size_t buflen,
   struct passwd **pwbufp)
 {
-
     int result;
     getpwent_r_type original;
 
@@ -113,7 +112,6 @@ struct passwd *getpwuid(uid_t uid)
 int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
   struct passwd **pwbufp)
 {
-
     int result;
     getpwuid_r_type original;
 
@@ -196,7 +194,6 @@ static int _main(int argc, char **argv)
 
     char *ld_preload = NULL;
     char *paths = NULL;
-
 
     if (argc < 2) {
         dprintf(STDERR_FILENO, "Usage: %s COMMAND [ARGUMENT]...\n", argv[0]);
