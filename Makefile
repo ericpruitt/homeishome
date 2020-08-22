@@ -10,7 +10,7 @@ LDFLAGS = -shared -ldl
 
 TEST_CFLAGS = -Werror -Wall -Wpedantic
 
-all: homeishome
+default: homeishome
 
 .c:
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
