@@ -3,17 +3,20 @@
 
 INSTALLDIR = /usr/local/bin
 
-CFLAGS = -Wall -fPIC -O3 -shared
+CFLAGS = -Wall -fPIC -O3
 CPPFLAGS = -D_GNU_SOURCE
-LDFLAGS = -ldl -Wl,-e,homeishome_so_main
+LDFLAGS = -shared -ldl -Wl,-e,main
 LIBRARY_SO = homeishome.so
 
 TEST_CFLAGS = -Werror -Wall -Wpedantic
 
 all: $(LIBRARY_SO)
 
-noop: noop.c
-	$(CC) $? -o $@
+.c:
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+.c.o:
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c
 
 config.h: noop
 	@rm -f $@.tmp
@@ -21,17 +24,18 @@ config.h: noop
 		export LC_ALL=C && \
 		readelf -l $? \
 		| sed -n 's/.*\[Requesting program interpreter: \(.*\)\]/\1/p'\
-	)" && \
+	)"; \
 	if [ -z "$$ld_path" ]; then \
 		echo "$@: unable to determine ELF interpreter path" >&2; \
 		exit 1; \
-	else \
-		printf '#define LD_PATH "%s"\n' "$$ld_path" >> $@.tmp; \
-	fi
+	fi; \
+	printf '#define ELF_INTERP "%s"\n' "$$ld_path" | tee -a $@.tmp
 	@mv $@.tmp $@
 
-$(LIBRARY_SO): homeishome.c config.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) homeishome.c -o $@ $(LDFLAGS)
+executableso.o: config.h
+
+$(LIBRARY_SO): homeishome.o executableso.o
+	$(CC) -o $@ $(LDFLAGS) *.o
 
 tests: tests.c
 	$(CC) $(CPPFLAGS) $(TEST_CFLAGS) $? -o $@
@@ -52,4 +56,4 @@ uninstall:
 	rm $(INSTALLDIR)/$(LIBRARY_SO)
 
 clean:
-	rm -f $(LIBRARY_SO) config.h noop tests
+	rm -f *.o *.so config.h noop tests

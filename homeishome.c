@@ -7,20 +7,10 @@
  * - License: [BSD 2-Clause](http://opensource.org/licenses/BSD-2-Clause)
  */
 #include <dlfcn.h>
-#include <errno.h>
-#include <limits.h>
 #include <pwd.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include "config.h"
-
-void homeishome_so_main(void);
-
-const char service_interp[] __attribute__((section(".interp"))) = LD_PATH;
 
 /**
  * Function pointer types of the canonical implementations of the overridden
@@ -58,12 +48,11 @@ static struct passwd *alter_passwd(struct passwd *entry)
     return entry;
 }
 
-// With the exception of "cmdline", "_main" and "homeishome_so_main", functions
-// below this line are thin wrappers around various library calls that return
-// information from the password database. The wrappers invoke "alter_passwd"
-// on any password database entries returned to the caller. The arguments
-// accepted by these functions and the return values are identical to their
-// canonical implementations.
+// The functions in this section are thin wrappers around various library calls
+// that return information from the password database. The wrappers invoke
+// "alter_passwd" on any password database entries returned to the caller. The
+// arguments accepted by these functions and the return values are identical to
+// their canonical implementations.
 
 struct passwd *getpwent(void)
 {
@@ -120,150 +109,4 @@ int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
     result = original(uid, pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
-}
-
-//                                    ---
-
-/**
- * Read the command line for "/proc/self/cmdline" and generated values suitable
- * for use as "argc" and "argv" in a standard main function.
- *
- * Arguments:
- * - argc: Pointer to the destination where the number of arguments should be
- *   stored.
- * - argv: Pointer to the destination where the arguments should be stored. As
- *   with "argv" used for "main", this array is terminated with a NULL pointer.
- *
- * Returns: 0 if the arguments were successfully extracted or -1 otherwise with
- * errno set accordingly.
- */
-static int cmdline(int *argc, char ***argv)
-{
-    FILE *stream;
-
-    size_t len = 0;
-    char *line = NULL;
-    void *next = NULL;
-
-    if (!(stream = fopen("/proc/self/cmdline", "r"))) {
-        return -1;
-    }
-
-    *argc = 0;
-
-    for (errno = 0; getdelim(&line, &len, '\0', stream) != -1; errno = 0) {
-        if (!(next = realloc(*argv, (size_t) (*argc + 2) * sizeof(char *)))) {
-            goto error;
-        }
-
-        *argv = next;
-        (*argv)[(*argc)++] = line;
-        line = NULL;
-        len = 0;
-    }
-
-    if (!errno) {
-        (*argv)[*argc] = NULL;
-        return 0;
-    }
-
-error:
-    for (; *argc > 0; (*argc)--) {
-        free((*argv)[*argc - 1]);
-    }
-
-    free(line);
-    free(*argv);
-    return -1;
-}
-
-/**
- * This function is simply a renamed "main" function and works the same way.
- *
- * Arguments:
- * - argc: Number of command line arguments.
- * - argv: List of command line arguments terminated with a NULL pointer.
- *
- * Returns: The program exit status.
- */
-static int _main(int argc, char **argv)
-{
-    char exe[PATH_MAX];
-    char *path;
-    char path_resolved[PATH_MAX];
-
-    char *ld_preload = NULL;
-    char *paths = NULL;
-
-    if (argc < 2) {
-        dprintf(STDERR_FILENO, "Usage: %s COMMAND [ARGUMENT]...\n", argv[0]);
-    } else if (!realpath("/proc/self/exe", exe)) {
-        perror("realpath: /proc/self/exe");
-    } else {
-        paths = getenv("LD_PRELOAD");
-
-        if (!paths || paths[0] == '\0') {
-            paths = NULL;
-            ld_preload = strdup(exe);
-
-            if (!ld_preload) {
-                perror("strdup");
-                goto error;
-            }
-        } else if (!(paths = strdup(paths))) {
-            perror("strdup");
-            goto error;
-        } else {
-            // Since strtok(3) may modify the underlying string, the new
-            // LD_PRELOAD value is prepared in advance even though it might not
-            // be used.
-            ld_preload = malloc(strlen(paths) + /* ":" */ 1 + strlen(exe) + 1);
-
-            if (!ld_preload) {
-                perror("malloc");
-                goto error;
-            }
-
-            stpcpy(stpcpy(stpcpy(ld_preload, paths), ":"), exe);
-
-            for (path = strtok(paths, ":"); path; path = strtok(NULL, ":")) {
-                if (!strcmp(exe, path) || (realpath(path, path_resolved) &&
-                  !strcmp(exe, path_resolved))) {
-                    goto exec;
-                }
-            }
-        }
-
-        if (setenv("LD_PRELOAD", ld_preload, 1)) {
-            perror("setenv: LD_PRELOAD");
-            goto error;
-        }
-
-exec:
-        execvp(argv[1], argv + 1);
-        perror("execvp");
-    }
-
-error:
-    free(paths);
-    free(ld_preload);
-    _exit(255);
-}
-
-/**
- * This function is the entry point when the shared object is executed.
- */
-void homeishome_so_main(void)
-{
-    int argc = 0;
-    char **argv = NULL;
-    int exit_status = 1;
-
-    if (cmdline(&argc, &argv)) {
-        perror("cmdline");
-    } else {
-        exit_status = _main(argc, argv);
-    }
-
-    exit(exit_status);
 }
