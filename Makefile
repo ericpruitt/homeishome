@@ -1,16 +1,16 @@
 #!/usr/bin/make -f
 .POSIX:
 
-INSTALLDIR = /usr/local/bin
+BIN = /usr/local/bin
+LIB = /usr/local/lib
 
 CFLAGS = -Wall -fPIC -O3
 CPPFLAGS = -D_GNU_SOURCE
-LDFLAGS = -shared -ldl -Wl,-e,main
-LIBRARY_SO = homeishome.so
+LDFLAGS = -shared -ldl
 
 TEST_CFLAGS = -Werror -Wall -Wpedantic
 
-all: $(LIBRARY_SO)
+all: homeishome
 
 .c:
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
@@ -34,26 +34,48 @@ config.h: noop
 
 executableso.o: config.h
 
-$(LIBRARY_SO): homeishome.o executableso.o
-	$(CC) -o $@ $(LDFLAGS) *.o
+homeishome.so: homeishome.o
+	$(CC) -o $@ $? $(LDFLAGS)
+
+homeishome: homeishome.o executableso.o
+	$(CC) -o $@ *.o $(LDFLAGS)
 
 tests: tests.c
-	$(CC) $(CPPFLAGS) $(TEST_CFLAGS) $? -o $@
+	$(CC) -o $@ $(CPPFLAGS) $(TEST_CFLAGS) $?
 
-test: $(LIBRARY_SO) tests
-	./$(LIBRARY_SO) ./tests
-
-$(INSTALLDIR)/$(LIBRARY_SO): $(LIBRARY_SO) tests
-	cp $(LIBRARY_SO) $(INSTALLDIR)
-	chmod 755 $(INSTALLDIR)/$(LIBRARY_SO)
-	@LD_PRELOAD=$(INSTALLDIR)/$(LIBRARY_SO) ./tests >/dev/null
-	@$@ ./tests >/dev/null
-	@echo "$(INSTALLDIR)/$(LIBRARY_SO): installed, and all tests passed"
-
-install: $(INSTALLDIR)/$(LIBRARY_SO)
-
-uninstall:
-	rm $(INSTALLDIR)/$(LIBRARY_SO)
+test: tests
+	@if ! [ -e homeishome ] && ! [ -e homeishome.so ]; then \
+		echo "$@: no compiled objects available for testing" >&2; \
+		exit 1; \
+	fi; \
+	if [ -e homeishome ]; then \
+		./homeishome ./tests || trap 'exit 1' EXIT; \
+		LD_PRELOAD=$$PWD/homeishome ./tests || trap 'exit 1' EXIT; \
+	fi; \
+	if [ -e homeishome.so ]; then \
+		LD_PRELOAD=$$PWD/homeishome.so ./tests || trap 'exit 1' EXIT; \
+	fi
 
 clean:
-	rm -f *.o *.so config.h noop tests
+	rm -f config.h homeishome noop tests *.o *.so
+
+$(BIN)/homeishome: homeishome
+	install -m 755 $? $@
+
+$(LIB)/homeishome.so: homeishome.so
+	install -m 644 $? $@
+
+install:
+	@if ! [ -e homeishome ] && ! [ -e homeishome.so ]; then \
+		echo "$@: no compiled objects available to install" >&2; \
+		exit 1; \
+	fi
+	@if [ -e homeishome ]; then \
+		$(MAKE) $(BIN)/homeishome; \
+	fi
+	@if [ -e homeishome.so ]; then \
+		$(MAKE) $(LIB)/homeishome.so; \
+	fi
+
+uninstall:
+	rm -f $(BIN)/homeishome $(LIB)/homeishome.so
