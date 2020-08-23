@@ -86,10 +86,7 @@ int main(void)
 
     if (cmdline(&argc, &argv)) {
         perror("cmdline");
-        goto error;
-    }
-
-    if (argc < 2) {
+    } else if (argc < 2) {
         dprintf(STDERR_FILENO, "Usage: %s COMMAND [ARGUMENT]...\n", argv[0]);
     } else if (!realpath("/proc/self/exe", exe)) {
         perror("realpath: /proc/self/exe");
