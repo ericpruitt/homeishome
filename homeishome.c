@@ -22,20 +22,6 @@
 #include <unistd.h>
 
 /**
- * Function pointer types of the canonical implementations of the overridden
- * functions.
- */
-typedef struct passwd *(*getpwent_type)(void);
-typedef int (*getpwent_r_type)(struct passwd *, char *, size_t,
-                               struct passwd **);
-typedef struct passwd *(*getpwnam_type)(const char *);
-typedef int (*getpwnam_r_type)(const char *, struct passwd *, char *, size_t,
-                               struct passwd **);
-typedef struct passwd *(*getpwuid_type)(uid_t);
-typedef int (*getpwuid_r_type)(uid_t, struct passwd *, char *, size_t,
-                               struct passwd **);
-
-/**
  * If a password database entry represents the current user and the "HOME"
  * environment variable is a non-empty string, ensure that the "HOME"
  * variable's value is used as the home directory (`entry->pw_dir =
@@ -65,57 +51,60 @@ static struct passwd *alter_passwd(struct passwd *entry)
 
 struct passwd *getpwent(void)
 {
-    getpwent_type original = (getpwent_type) dlsym(RTLD_NEXT, "getpwent");
-    return alter_passwd(original());
+    struct passwd *(*fn)(void);
+
+    fn = dlsym(RTLD_NEXT, "getpwent");
+    return alter_passwd(fn());
 }
 
 int getpwent_r(struct passwd *pwbuf, char *buf, size_t buflen,
   struct passwd **pwbufp)
 {
+    int (*fn)(struct passwd *, char *, size_t, struct passwd **);
     int result;
-    getpwent_r_type original;
 
-    original = (getpwent_r_type) dlsym(RTLD_NEXT, "getpwent_r");
-
-    result = original(pwbuf, buf, buflen, pwbufp);
+    fn = dlsym(RTLD_NEXT, "getpwent_r");
+    result = fn(pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
 }
 
 struct passwd *getpwnam(const char *name)
 {
-    getpwnam_type original = (getpwnam_type) dlsym(RTLD_NEXT, "getpwnam");
-    return alter_passwd(original(name));
+    struct passwd *(*fn)(const char *);
+
+    fn = dlsym(RTLD_NEXT, "getpwnam");
+    return alter_passwd(fn(name));
 }
 
 int getpwnam_r(const char *name, struct passwd *pwbuf, char *buf,
   size_t buflen, struct passwd **pwbufp)
 {
+    int (*fn)(const char *, struct passwd *, char *, size_t, struct passwd **);
     int result;
-    getpwnam_r_type original;
 
-    original = (getpwnam_r_type) dlsym(RTLD_NEXT, "getpwnam_r");
-
-    result = original(name, pwbuf, buf, buflen, pwbufp);
+    fn = dlsym(RTLD_NEXT, "getpwnam_r");
+    result = fn(name, pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
 }
 
 struct passwd *getpwuid(uid_t uid)
 {
-    getpwuid_type original = (getpwuid_type) dlsym(RTLD_NEXT, "getpwuid");
-    return alter_passwd(original(uid));
+    struct passwd *(*fn)(uid_t);
+
+    fn = dlsym(RTLD_NEXT, "getpwuid");
+    return alter_passwd(fn(uid));
 }
 
 int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
   struct passwd **pwbufp)
 {
+    int (*fn)(uid_t, struct passwd *, char *, size_t, struct passwd **);
     int result;
-    getpwuid_r_type original;
 
-    original = (getpwuid_r_type) dlsym(RTLD_NEXT, "getpwuid_r");
-
-    result = original(uid, pwbuf, buf, buflen, pwbufp);
+    fn = dlsym(RTLD_NEXT, "getpwuid_r");
+    result = fn(uid, pwbuf, buf, buflen, pwbufp);
     *pwbufp = alter_passwd(*pwbufp);
     return result;
 }
