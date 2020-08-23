@@ -34,8 +34,15 @@ This project is licensed under the [2-clause BSD license][bsd-2-clause].
 
   [bsd-2-clause]: http://opensource.org/licenses/BSD-2-Clause
 
-Build Targets
--------------
+Compilation
+-----------
+
+### Dependencies ###
+
+- **Debian-based Systems:** `apt-get install build-essential`
+- **RHEL/CentOS-based Systems:** `yum install gcc make`
+
+### Build Targets ###
 
 - **homeishome**: Build the executable version of the library that can be
   loaded using "LD_PRELOAD" or by executing the library. This is the default
