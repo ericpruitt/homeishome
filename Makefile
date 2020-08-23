@@ -4,6 +4,7 @@
 BIN = /usr/local/bin
 LIB = /usr/local/lib
 
+CC = c99
 CFLAGS = -Wall -fPIC -O3
 CPPFLAGS = -D_GNU_SOURCE
 LDFLAGS = -shared -ldl
