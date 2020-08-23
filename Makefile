@@ -13,6 +13,8 @@ TEST_CFLAGS = -Werror -Wall -Wpedantic
 
 default: homeishome
 
+all: homeishome homeishome.so
+
 .c:
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
 

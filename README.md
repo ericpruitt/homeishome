@@ -49,6 +49,7 @@ Compilation
   target.
 - **homeishome.so**: Build a non-executable shared object that must be loaded
   by explicitly configuring "LD_PRELOAD".
+- **all:** Build both "homeishome" and "homeishome.so".
 - **test:** Run behavior verification test suite. If neither "homeishome" nor
   "homeishome.so" has been compiled, this target will fail.
 - **install**: Copy the shared object "homeishome.so" to `$(LIB)`
