@@ -1,6 +1,15 @@
 /**
- * This library ensures that the "HOME" environment variable takes precedence
- * over paths returned by functions that query the password database.
+ * When loaded via "LD_PRELOAD", this library ensures that the "HOME"
+ * environment variable takes precedence over paths returned by functions that
+ * query the password database. The library supplies wrappers for the following
+ * functions:
+ *
+ * - _getpwent(3)_
+ * - _getpwent_r(3)_
+ * - _getpwnam(3)_
+ * - _getpwnam_r(3)_
+ * - _getpwuid(3)_
+ * - _getpwuid_r(3)_
  *
  * Metadata:
  * - Author:  Eric Pruitt; <https://www.codevat.com>
@@ -50,9 +59,9 @@ static struct passwd *alter_passwd(struct passwd *entry)
 
 // The functions in this section are thin wrappers around various library calls
 // that return information from the password database. The wrappers invoke
-// "alter_passwd" on any password database entries returned to the caller. The
-// arguments accepted by these functions and the return values are identical to
-// their canonical implementations.
+// "alter_passwd" on any password database entries before returning them to the
+// caller. The arguments accepted by these functions and the return values are
+// identical to their canonical implementations.
 
 struct passwd *getpwent(void)
 {

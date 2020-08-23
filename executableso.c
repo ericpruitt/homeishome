@@ -1,6 +1,14 @@
 /**
- * This library implements the logic required to make a shared object
- * executable.
+ * This file implements the logic required to make a shared object executable.
+ * When executed, the program checks to see if its binary is listed in the
+ * "LD_PRELOAD" environment variable and, if the program is not present, adds
+ * itself to the series. Finally, the program executes the user-specified
+ * command in the updated environment. The configuration file for this header
+ * is "config.h". The header must define a string named "ELF_INTERP" that is
+ * the path of the interpreter that should be used to execute the library.
+ * Since shared object entry points cannot access the program's argument list
+ * via "argc" and "argv", the invocation arguments are extracted from
+ * "/proc/self/cmdline".
  *
  * Metadata:
  * - Author:  Eric Pruitt; <https://www.codevat.com>
@@ -16,13 +24,13 @@
 #include "config.h"
 
 /**
- * Custom ELF interpreter entry that makes a shared object executable.
+ * ELF interpreter definition that makes a compiled shared object executable.
  */
 const char elf_interp[] __attribute__((section(".interp"))) = ELF_INTERP;
 
 /**
- * Read the command line for "/proc/self/cmdline" and generated values suitable
- * for use as "argc" and "argv" in a standard main function.
+ * Read the command line from "/proc/self/cmdline" and generate values suitable
+ * for use as "argc" and "argv" in a standard "main" function.
  *
  * Arguments:
  * - argc: Pointer to the destination where the number of arguments should be
@@ -31,7 +39,7 @@ const char elf_interp[] __attribute__((section(".interp"))) = ELF_INTERP;
  *   with "argv" used for "main", this array is terminated with a NULL pointer.
  *
  * Returns: 0 if the arguments were successfully extracted or -1 otherwise with
- * errno set accordingly.
+ * "errno" set accordingly.
  */
 static int cmdline(int *argc, char ***argv)
 {
@@ -73,6 +81,10 @@ error:
     return -1;
 }
 
+/**
+ * Insert the current executable into the "LD_PRELOAD" chain if it is not
+ * already present, and execute a command with the updated environment.
+ */
 int main(void)
 {
     char exe[PATH_MAX];
