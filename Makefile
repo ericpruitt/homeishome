@@ -39,7 +39,7 @@ homeishome.so: homeishome.o
 	$(CC) -o $@ $? $(LDFLAGS)
 
 homeishome: homeishome.o executableso.o
-	$(CC) -o $@ *.o $(LDFLAGS)
+	$(CC) -o $@ *.o $(LDFLAGS) -Wl,-e,main
 
 tests: tests.c
 	$(CC) -o $@ $(CPPFLAGS) $(TEST_CFLAGS) $?
