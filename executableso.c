@@ -93,6 +93,7 @@ int main(void)
 
     int argc = 0;
     char **argv = NULL;
+    int exit_status = 255;
     char *ld_preload = NULL;
     char *paths = NULL;
 
@@ -144,11 +145,21 @@ int main(void)
 
 exec:
         execvp(argv[1], argv + 1);
+
+        switch (errno) {
+          case EACCES:
+            exit_status = 126;
+            break;
+          case ENOENT:
+            exit_status = 127;
+            break;
+        }
+
         perror("execvp");
     }
 
 error:
     free(paths);
     free(ld_preload);
-    _exit(255);
+    _exit(exit_status);
 }
