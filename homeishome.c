@@ -52,7 +52,7 @@ static struct passwd *alter_passwd(struct passwd *entry)
  * - handle: See _dlsym(3)_.
  * - symbol: See _dlsym(3)_.
  *
- * Returns: On success, this function returns the address associated with
+ * Returns: On success, this function returns the address associated with the
  * symbol, but on failure, `NULL` is returned.
  */
 static void *xdlsym(void *handle, const char *symbol)
