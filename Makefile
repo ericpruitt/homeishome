@@ -23,16 +23,16 @@ all: homeishome homeishome.so
 
 config.h: noop
 	@rm -f $@.tmp
-	@ld_path="$$( \
+	@elf_interp="$$( \
 		export LC_ALL=C && \
 		readelf -l $? \
 		| sed -n 's/.*\[Requesting program interpreter: \(.*\)\]/\1/p'\
 	)"; \
-	if [ -z "$$ld_path" ]; then \
+	if [ -z "$$elf_interp" ]; then \
 		echo "$@: unable to determine ELF interpreter path" >&2; \
 		exit 1; \
 	fi; \
-	printf '#define ELF_INTERP "%s"\n' "$$ld_path" | tee -a $@.tmp
+	printf '#define ELF_INTERP "%s"\n' "$$elf_interp" | tee -a $@.tmp
 	@mv $@.tmp $@
 
 executableso.o: config.h
