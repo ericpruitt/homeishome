@@ -76,7 +76,7 @@ struct passwd *getpwent(void)
 {
     struct passwd *(*fn)(void);
 
-    fn = xdlsym(RTLD_NEXT, "getpwent");
+    fn = xdlsym(RTLD_NEXT, __func__);
     return alter_passwd(fn());
 }
 
@@ -86,7 +86,7 @@ int getpwent_r(struct passwd *pwbuf, char *buf, size_t buflen,
     int (*fn)(struct passwd *, char *, size_t, struct passwd **);
     int result;
 
-    fn = xdlsym(RTLD_NEXT, "getpwent_r");
+    fn = xdlsym(RTLD_NEXT, __func__);
     result = fn(pwbuf, buf, buflen, pwbufp);
     alter_passwd(*pwbufp);
     return result;
@@ -96,7 +96,7 @@ struct passwd *getpwnam(const char *name)
 {
     struct passwd *(*fn)(const char *);
 
-    fn = xdlsym(RTLD_NEXT, "getpwnam");
+    fn = xdlsym(RTLD_NEXT, __func__);
     return alter_passwd(fn(name));
 }
 
@@ -106,7 +106,7 @@ int getpwnam_r(const char *name, struct passwd *pwbuf, char *buf,
     int (*fn)(const char *, struct passwd *, char *, size_t, struct passwd **);
     int result;
 
-    fn = xdlsym(RTLD_NEXT, "getpwnam_r");
+    fn = xdlsym(RTLD_NEXT, __func__);
     result = fn(name, pwbuf, buf, buflen, pwbufp);
     alter_passwd(*pwbufp);
     return result;
@@ -116,7 +116,7 @@ struct passwd *getpwuid(uid_t uid)
 {
     struct passwd *(*fn)(uid_t);
 
-    fn = xdlsym(RTLD_NEXT, "getpwuid");
+    fn = xdlsym(RTLD_NEXT, __func__);
     return alter_passwd(fn(uid));
 }
 
@@ -126,7 +126,7 @@ int getpwuid_r(uid_t uid, struct passwd *pwbuf, char *buf, size_t buflen,
     int (*fn)(uid_t, struct passwd *, char *, size_t, struct passwd **);
     int result;
 
-    fn = xdlsym(RTLD_NEXT, "getpwuid_r");
+    fn = xdlsym(RTLD_NEXT, __func__);
     result = fn(uid, pwbuf, buf, buflen, pwbufp);
     alter_passwd(*pwbufp);
     return result;
