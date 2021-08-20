@@ -45,6 +45,7 @@ static int cmdline(int *argc, char ***argv)
 {
     FILE *stream;
 
+    char ***orig_argv = argv;
     size_t len = 0;
     char *line = NULL;
     void *next = NULL;
@@ -56,7 +57,7 @@ static int cmdline(int *argc, char ***argv)
     *argc = 0;
 
     for (errno = 0; getdelim(&line, &len, '\0', stream) != -1; errno = 0) {
-        if (!(next = realloc(*argv, (size_t) (*argc + 2) * sizeof(char *)))) {
+        if (!(next = realloc(*orig_argv, (size_t) (*argc + 2) * sizeof(char *)))) {
             goto error;
         }
 
@@ -77,7 +78,7 @@ error:
     }
 
     free(line);
-    free(*argv);
+    free(*orig_argv);
     return -1;
 }
 
